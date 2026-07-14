@@ -1,98 +1,227 @@
 # InnerLoop
 
-Structured voice check-in companion. Leads a conversation, reads tone and
-content together, ends every session with a concrete next step.
+A voice-based check-in companion that leads a structured conversation, reads
+both what you say and how you say it, and ends every session with a concrete
+next step.
 
-## Setup (inside the VDI)
+Built on Airtel's speech-to-text, text-to-speech, and LLM endpoints. No model
+training or fine-tuning is involved.
+
+---
+
+## What it does
+
+Most reflective tools wait for you to talk and then respond. InnerLoop leads.
+It opens with a framing question, steers the conversation toward clarity, and
+closes with a plan.
+
+A session runs as a loop:
+
+1. **It asks.** The opening question gives you something to push against, not a
+   blank page. Never "how are you today".
+2. **You speak.** Audio is captured in the browser and transcribed.
+3. **It listens on two channels.** The transcript tells it *what* you said. The
+   raw audio tells it *how* you said it: pace, pitch, pauses, voice strain,
+   sighs.
+4. **It probes.** One question per turn, asking you to say more about something
+   specific you raised. It does not tell you what you "really" mean.
+5. **It converges.** As the session progresses, it shifts from exploring to
+   narrowing to closing.
+6. **It reports.** Two outputs, every time.
+
+### The two reports
+
+**Report 1 — what was said.** Purely observational. The issues you raised in
+your own framing, any to-dos you mentioned yourself, and tone patterns tied to
+the moments they occurred ("your pace picked up when the deadline came up").
+It never claims to know what is underneath.
+
+**Report 2 — the plan.** One grounding technique matched to your measured
+arousal, and one journaling style matched to how you process things. Not a
+menu. One clear next step you can take today.
+
+---
+
+## How the emotion analysis works
+
+The core design principle: **audio tells you arousal, text tells you valence.**
+
+Acoustic features are reliable for arousal (calm versus agitated) but
+unreliable for valence (positive versus negative), because an excited voice and
+an angry voice look acoustically similar. Text is the reverse. This is the
+documented "valence gap" in speech emotion recognition, and InnerLoop's
+architecture is built around it: each signal is used only for what it measures
+well, then fused.
+
+Four signals run on every turn of audio:
+
+| Signal | Tool | What it measures |
+|---|---|---|
+| Acoustic prosody | librosa | Pitch contour, energy, MFCCs, pauses, speech rate |
+| Voice quality | openSMILE (eGeMAPS) | Jitter, shimmer, loudness, harmonics-to-noise ratio |
+| Emotion label | HuggingFace (inference only) | An emotion category with a confidence score |
+| Nonverbal cues | Custom heuristics | Sighs, audible breaths, hesitation patterns |
+
+All four are serialized into a compact text summary and handed to the LLM
+alongside the transcript. The LLM makes the combined read.
+
+**Disagreement between the channels is signal, not noise.** Angry words in a
+flat voice is a meaningfully different state from angry words shouted. A system
+with only audio would miss the anger; a system with only text would miss the
+flatness. InnerLoop sees both, and can ask about the gap.
+
+Tone is measured per sentence, not per word — word-level prosody measurement is
+unstable, sentence-level is reliable.
+
+---
+
+## Architecture
+
+```
+        ┌─────────────────────────────────────────┐
+        │              Browser                    │
+        │        record / playback / UI           │
+        └────────────────┬────────────────────────┘
+                         │ audio
+                         ▼
+        ┌─────────────────────────────────────────┐
+        │           FastAPI backend               │
+        └──┬──────────────┬──────────────┬────────┘
+           │              │              │
+           ▼              ▼              ▼
+    ┌──────────┐   ┌────────────┐  ┌──────────┐
+    │ Riva STT │   │    Tone    │  │   TTS    │
+    │streaming │   │  analysis  │  │ endpoint │
+    └────┬─────┘   │ (4 signals)│  └─────▲────┘
+         │         └──────┬─────┘        │
+         │ transcript     │ signals      │ reply
+         └────────┬───────┘              │
+                  ▼                      │
+         ┌─────────────────┐             │
+         │  gpt-oss-120b   │─────────────┘
+         │  next question  │
+         │  + reports      │
+         └─────────────────┘
+```
+
+---
+
+## Project layout
+
+```
+src/
+  config.py           Loads endpoint config from environment
+  tone.py             The four signal extractors, plus arousal derivation
+  prompts.py          Conversation logic and behavioural boundaries
+  session.py          Turn state, report generation, latency handling
+  practice_bank.json  Grounding techniques and journaling styles
+
+tests/
+  test_llm.py             LLM endpoint: Hinglish, JSON output, latency
+  test_stt_rest.py        STT endpoint: response shape, timestamps
+  test_tts.py             TTS endpoint: audio format, latency per word
+  test_riva_streaming.py  Streaming STT: partial transcripts, word timings
+  test_full_loop.py       End-to-end turn latency, and where the bottleneck is
+```
+
+---
+
+## Setup
+
+Requires access to the Airtel endpoints, which are reachable from the VDI.
 
 ```bash
 python -m venv venv
-source venv/bin/activate          # Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
-
-cp .env.example .env
-# Fill in .env with the real endpoint values. Never commit this file.
 ```
 
-Add to `.gitignore` immediately:
+Create a `.env` file with the endpoint configuration:
+
 ```
-.env
-out/
-sessions/
-venv/
+LLM_BASE_URL=
+LLM_API_KEY=
+LLM_MODEL=gpt-oss-120b
+
+RIVA_HOST=
+RIVA_LANGUAGE_CODE=hi-IN
+RIVA_USE_SSL=false
+
+STT_REST_URL=
+STT_CLIENT_ID=
+STT_CLIENT_KEY=
+STT_AUTH_BASIC=
+
+TTS_URL=
+TTS_AUTH_BASIC=
+TTS_CLIENT_ID=
+TTS_CLIENT_KEY=
 ```
 
-## Test the endpoints (do this first)
+`.env` is gitignored and must never be committed.
 
-Run in this order. Each one answers a specific question.
+---
+
+## Running the endpoint tests
+
+These verify the endpoints behave as expected and measure latency.
 
 ```bash
-# 1. Does the LLM work? Does it do Hinglish? Does it return clean JSON?
 python tests/test_llm.py
-
-# 2. What does the STT endpoint actually return?
-#    Record ~10s of yourself talking, save as test.wav
-python tests/test_stt_rest.py test.wav
-
-# 3. What audio format does TTS return? How slow is a long report?
+python tests/test_stt_rest.py sample.wav
 python tests/test_tts.py
-
-# 4. Do partial transcripts arrive while you speak? Word timestamps?
-python tests/test_riva_streaming.py test.wav
-
-# 5. THE IMPORTANT ONE. How long does one full turn actually take?
-python tests/test_full_loop.py test.wav
+python tests/test_riva_streaming.py sample.wav
+python tests/test_full_loop.py sample.wav
 ```
 
-### What to write down
+`test_full_loop.py` is the important one. It times each stage of a single
+conversational turn and identifies the bottleneck. Under two seconds per turn
+feels conversational; over four seconds needs optimization.
 
-From test 2 (STT):
-- [ ] Response format: JSON or plain text?
-- [ ] Word-level timestamps included? (hotspot analysis needs these)
-- [ ] Confidence scores included?
-- [ ] Which language flag handles Hinglish better, ENG or HIN?
+## Running the tone analysis on its own
 
-From test 3 (TTS):
-- [ ] Audio format and sample rate (needed for browser playback)
-- [ ] ms per word (multiply by report length = end-of-session wait)
-
-From test 5 (full loop):
-- [ ] Which stage is the bottleneck? Optimize that one, not the others.
-- [ ] Under 2s = feels conversational. Over 4s = needs the streaming fixes.
-
-## Test the tone module
-
-Works offline, no endpoints needed.
+The tone module requires no endpoints and runs entirely locally.
 
 ```bash
-python -m innerloop.tone test.wav 25    # 25 = word count from the transcript
+python -m src.tone sample.wav 30
 ```
 
-Prints the compact summary the LLM will receive, plus raw values for debugging.
+The second argument is the word count of the utterance, used to compute speech
+rate. It prints the compact summary the LLM receives, plus raw feature values.
 
-## Structure
+---
 
-```
-innerloop/
-  config.py          # loads .env, no secrets in code
-  tone.py            # the 4 signals (SDLC 4.3)
-  prompts.py         # conversation logic + safety boundaries
-  session.py         # state across turns, reports, latency handling
-  practice_bank.json # techniques + journaling styles
-tests/               # endpoint tests, run these first
-```
+## Latency design
 
-## Design rules (do not drift from these)
+A voice loop makes latency immediately obvious, so it is handled by design
+rather than optimized afterwards:
 
-- **Audio gives arousal. Text gives valence.** Never read positive/negative
-  from acoustics; an excited voice and an angry voice look the same. That is
-  the valence gap, and the architecture is built around it.
-- **Observe, never interpret.** "Your pace picked up when work came up" is
-  fine. "You are anxious about work" is not.
-- **InnerLoop leads.** Never opens with "how are you". Always a frame.
-- **Every session ends with one concrete next step.** Not a menu.
+- **Streaming output.** Sentences are sent to TTS as they complete, so speech
+  begins before the LLM has finished generating.
+- **Capped turn outputs.** Follow-up questions are short by construction.
+  Long generations only happen once, at session close.
+- **Compact signal serialization.** Acoustic features are binned into
+  qualitative labels before reaching the prompt. Raw feature vectors are
+  token-expensive and LLMs reason about them poorly.
+- **Pre-filtered practice bank.** Only techniques matching the measured arousal
+  are sent to the model, not the entire bank.
+- **Sliding-window history.** Recent turns are kept verbatim; older turns are
+  compressed into a summary.
 
-## Security
+---
 
-Endpoints, tokens, and hostnames stay in the VDI. `.env` is never committed,
-never copied out, never pasted into chat tools.
+## Design boundaries
+
+InnerLoop is a reflective check-in and stabilization tool. It is not therapy and
+does not diagnose.
+
+- It reports what it **observed**, never what it concluded about someone's
+  psychology.
+- It probes by asking for elaboration ("tell me more about that"), never by
+  reinterpreting ("you said X but you mean Y").
+- The grounding techniques it suggests are stabilization practices, drawn from
+  established frameworks (DBT distress tolerance, somatic and polyvagal-informed
+  practice, CBT). Stabilization reduces acute distress; it does not treat
+  underlying causes.
+- If someone describes being in danger or at risk of harm, the normal flow stops
+  and it directs them to professional support.
