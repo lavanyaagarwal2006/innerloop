@@ -17,7 +17,7 @@ import time
 import requests
 
 sys.path.insert(0, ".")
-from innerloop import config  # noqa: E402
+from src import config  # noqa: E402
 
 cfg = config.llm()
 

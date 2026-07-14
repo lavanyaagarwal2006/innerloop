@@ -19,7 +19,7 @@ import wave
 import requests
 
 sys.path.insert(0, ".")
-import config  # noqa: E402
+from src import config  # noqa: E402
 
 cfg = config.stt_rest()
 

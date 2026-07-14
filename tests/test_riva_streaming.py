@@ -22,7 +22,7 @@ import sys
 import time
 
 sys.path.insert(0, ".")
-from innerloop import config  # noqa: E402
+from src import config  # noqa: E402
 
 try:
     import riva.client
