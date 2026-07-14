@@ -1,6 +1,6 @@
 # InnerLoop
 
-A voice-based check-in companion that leads a structured conversation, reads
+An "emotionally intelligent" voice-based check-in companion that leads a structured conversation, reads
 both what you say and how you say it, and ends every session with a concrete
 next step.
 
@@ -106,26 +106,6 @@ unstable, sentence-level is reliable.
 
 ---
 
-## Project layout
-
-```
-src/
-  config.py           Loads endpoint config from environment
-  tone.py             The four signal extractors, plus arousal derivation
-  prompts.py          Conversation logic and behavioural boundaries
-  session.py          Turn state, report generation, latency handling
-  practice_bank.json  Grounding techniques and journaling styles
-
-tests/
-  test_llm.py             LLM endpoint: Hinglish, JSON output, latency
-  test_stt_rest.py        STT endpoint: response shape, timestamps
-  test_tts.py             TTS endpoint: audio format, latency per word
-  test_riva_streaming.py  Streaming STT: partial transcripts, word timings
-  test_full_loop.py       End-to-end turn latency, and where the bottleneck is
-```
-
----
-
 ## Setup
 
 Requires access to the Airtel endpoints, which are reachable from the VDI.
@@ -161,22 +141,6 @@ TTS_CLIENT_KEY=
 `.env` is gitignored and must never be committed.
 
 ---
-
-## Running the endpoint tests
-
-These verify the endpoints behave as expected and measure latency.
-
-```bash
-python tests/test_llm.py
-python tests/test_stt_rest.py sample.wav
-python tests/test_tts.py
-python tests/test_riva_streaming.py sample.wav
-python tests/test_full_loop.py sample.wav
-```
-
-`test_full_loop.py` is the important one. It times each stage of a single
-conversational turn and identifies the bottleneck. Under two seconds per turn
-feels conversational; over four seconds needs optimization.
 
 ## Running the tone analysis on its own
 
