@@ -1,0 +1,173 @@
+{
+  "_note": "Reference data the LLM selects from at session close. NOT training data. Descriptions written fresh; 'source' names the framework each technique comes from.",
+
+  "techniques": [
+    {
+      "id": "box_breathing",
+      "name": "Box breathing",
+      "arousal_target": "high",
+      "trigger": ["fast pace", "high pitch variability", "loud energy"],
+      "instructions": "Breathe in for 4 counts, hold for 4, out for 4, hold for 4. Repeat for 2 minutes.",
+      "why": "A longer, controlled exhale slows the heart rate through the vagus nerve.",
+      "source": "DBT distress tolerance (paced breathing)",
+      "duration_min": 2
+    },
+    {
+      "id": "physiological_sigh",
+      "name": "Double inhale, long exhale",
+      "arousal_target": "high",
+      "trigger": ["fast pace", "shallow breath", "strained voice"],
+      "instructions": "Two short inhales through the nose, then one long slow exhale through the mouth. Repeat 5 times.",
+      "why": "Reinflates collapsed air sacs and offloads carbon dioxide quickly, which drops arousal within about a minute.",
+      "source": "Respiratory physiology / physiological sigh research",
+      "duration_min": 2
+    },
+    {
+      "id": "cold_water",
+      "name": "Cold water on the face",
+      "arousal_target": "high",
+      "trigger": ["very high arousal", "panic-like pace", "unable to settle"],
+      "instructions": "Hold cold water or a cold pack against the face around the eyes and upper cheeks for 30 seconds while holding your breath.",
+      "why": "Triggers the mammalian dive reflex, which slows heart rate sharply. Fast-acting when nothing else lands.",
+      "source": "DBT TIPP skill (Temperature)",
+      "duration_min": 1
+    },
+    {
+      "id": "progressive_muscle",
+      "name": "Progressive muscle relaxation",
+      "arousal_target": "high",
+      "trigger": ["strained voice", "tension", "sustained high energy"],
+      "instructions": "Tense one muscle group hard for 5 seconds, then release. Move from feet upward through the body.",
+      "why": "Tension is easier to release after deliberately increasing it. Also redirects attention into the body.",
+      "source": "DBT TIPP skill (Progressive muscle relaxation)",
+      "duration_min": 8
+    },
+
+    {
+      "id": "somatic_shaking",
+      "name": "Shaking it out",
+      "arousal_target": "low",
+      "trigger": ["flat pitch", "low energy", "slow pace", "frozen quality"],
+      "instructions": "Stand and shake out your hands, then arms, then legs, then the whole body. Two to three minutes, loosely, no form required.",
+      "why": "Discharges held tension and raises physical activation when the system has gone still or shut down.",
+      "source": "Somatic experiencing (discharge techniques)",
+      "duration_min": 3
+    },
+    {
+      "id": "five_four_three",
+      "name": "5-4-3-2-1 senses",
+      "arousal_target": "low",
+      "trigger": ["flat affect", "disconnection", "long pauses"],
+      "instructions": "Name 5 things you can see, 4 you can hear, 3 you can touch, 2 you can smell, 1 you can taste.",
+      "why": "Pulls attention out of the head and back into the immediate physical environment. Works anywhere, needs nothing.",
+      "source": "Standard grounding technique (widely used in trauma-informed care)",
+      "duration_min": 3
+    },
+    {
+      "id": "cold_intense_movement",
+      "name": "One minute of intense movement",
+      "arousal_target": "low",
+      "trigger": ["very low energy", "flat", "stuck"],
+      "instructions": "Do one minute of hard physical movement: jumping jacks, running in place, stairs. Enough to be out of breath.",
+      "why": "Physical exertion shifts a stalled nervous system state. Blunt but effective when the system is flat.",
+      "source": "DBT TIPP skill (Intense exercise)",
+      "duration_min": 1
+    },
+    {
+      "id": "humming",
+      "name": "Humming or long vocal tone",
+      "arousal_target": "low",
+      "trigger": ["low energy", "quiet voice", "withdrawn"],
+      "instructions": "Hum a low steady note on a long exhale. Repeat for 1 to 2 minutes and feel the vibration in the chest and throat.",
+      "why": "Vocal vibration stimulates the vagus nerve directly, which supports a shift out of a shut-down state.",
+      "source": "Polyvagal-informed practice (vagal toning)",
+      "duration_min": 2
+    },
+
+    {
+      "id": "orienting",
+      "name": "Orienting to the room",
+      "arousal_target": "moderate",
+      "trigger": ["circling thoughts", "repeated themes", "rumination"],
+      "instructions": "Slowly turn your head and scan the room. Let your eyes land on objects and silently name them. Do not rush.",
+      "why": "Signals to a hypervigilant system that the immediate environment is safe, which interrupts the loop.",
+      "source": "Somatic experiencing (orienting)",
+      "duration_min": 3
+    },
+    {
+      "id": "worry_window",
+      "name": "Scheduled worry window",
+      "arousal_target": "moderate",
+      "trigger": ["rumination", "same topic returning", "spiralling"],
+      "instructions": "Pick a fixed 15 minute slot later today. When the thought returns before then, note it down and tell yourself it gets that slot, not now.",
+      "why": "Containing rumination to a bounded time reduces how much of the day it occupies, without suppressing it.",
+      "source": "CBT (stimulus control for worry)",
+      "duration_min": 15
+    },
+    {
+      "id": "feet_on_floor",
+      "name": "Feet on the floor",
+      "arousal_target": "moderate",
+      "trigger": ["hesitation", "frequent pausing", "uncertainty"],
+      "instructions": "Press both feet flat into the floor. Push down and notice the pressure, the contact, the support underneath.",
+      "why": "A minimal grounding action for when a longer practice is not realistic. Physical contact anchors attention to the present.",
+      "source": "Standard grounding technique",
+      "duration_min": 1
+    },
+    {
+      "id": "name_it",
+      "name": "Naming the feeling",
+      "arousal_target": "moderate",
+      "trigger": ["mixed signals", "flat voice with heavy words", "unclear state"],
+      "instructions": "Say out loud, or write down, one sentence: 'Right now I am feeling ___.' Just the name. No explanation, no fixing.",
+      "why": "Putting a specific label on an emotional state measurably lowers its intensity. Naming beats suppressing.",
+      "source": "Affect labelling research",
+      "duration_min": 2
+    }
+  ],
+
+  "journaling_styles": [
+    {
+      "id": "structured_prompts",
+      "name": "Fixed morning questions",
+      "for": "People who freeze at a blank page and want a clear frame.",
+      "format": "Answer the same 3 questions every morning: What is on my mind? What is one thing in my control today? What is one thing I will let go of?",
+      "signals": ["asks for structure", "overwhelmed by open-ended", "wants clear steps"]
+    },
+    {
+      "id": "single_prompt",
+      "name": "One prompt at a time",
+      "for": "People who get overwhelmed by a full page and stop before starting.",
+      "format": "One short prompt, one short answer. Two or three sentences is a complete entry. Nothing more is required.",
+      "signals": ["overwhelmed", "low energy", "avoids starting", "perfectionist"]
+    },
+    {
+      "id": "visual",
+      "name": "Draw it instead",
+      "for": "People who process visually or find words effortful.",
+      "format": "Draw the feeling. Shape, colour, scribble, whatever. No skill needed, no one else sees it.",
+      "signals": ["creative", "struggles to verbalise", "words feel reductive"]
+    },
+    {
+      "id": "brain_dump",
+      "name": "Unstructured brain dump",
+      "for": "People with a lot circling who need it out of their head first.",
+      "format": "Write continuously for 10 minutes without stopping or editing. Nothing has to be coherent or kept.",
+      "signals": ["rumination", "lots of content", "fast pace", "many topics"]
+    },
+    {
+      "id": "voice_note",
+      "name": "Voice note journaling",
+      "for": "People who talk more easily than they write.",
+      "format": "Record a 2 minute voice note to yourself. No transcription, no rereading. The point is saying it out loud.",
+      "signals": ["speaks fluently", "avoids writing", "prefers talking"]
+    },
+    {
+      "id": "evidence_log",
+      "name": "Evidence log",
+      "for": "People stuck in an absolute belief about themselves or a situation.",
+      "format": "Write the belief at the top. Underneath, list only concrete evidence for and against it. Facts only, no interpretation.",
+      "signals": ["absolute language", "always/never", "self-critical"]
+    }
+  ]
+}

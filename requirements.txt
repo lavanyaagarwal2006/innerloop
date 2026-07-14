@@ -1,0 +1,24 @@
+# Core
+requests
+python-dotenv
+
+# Audio / tone analysis (SDLC section 4.3)
+librosa            # Signal 1: pitch, energy, MFCCs, pauses
+opensmile          # Signal 2: eGeMAPS -> jitter, shimmer, HNR
+soundfile
+numpy
+
+# Signal 3: pretrained emotion classifier (inference only, no training)
+transformers
+torch
+
+# STT
+nvidia-riva-client  # streaming STT over gRPC
+
+# Backend / frontend
+fastapi
+uvicorn
+streamlit
+
+# Voice orchestration (add once the loop is working end to end)
+# pipecat-ai
